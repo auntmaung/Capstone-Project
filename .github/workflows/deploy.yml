@@ -20,15 +20,13 @@ jobs:
 
     - name: Copy files to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} '
-          mkdir -p ~/app'
-        rsync -avz --exclude=".git" ./ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/app/
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ubuntu/app
 
     - name: Deploy on EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} '
-          cd ~/app &&
-          docker-compose down &&
-          docker-compose pull &&
+        ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
+          cd /home/ubuntu/app
+          docker-compose down || true
+          docker-compose pull
           docker-compose up -d --build
-        '
+        EOF
